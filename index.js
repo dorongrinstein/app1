@@ -7,5 +7,5 @@ app.listen(8080);
 
 function root(req, res) {
 	console.log('request received');
-	res.send('hello my friend Julian');
+	res.send('hello my friend Julian and Julia');
 }
