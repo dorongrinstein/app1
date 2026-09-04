@@ -1,3 +1,4 @@
+// reviewed by cursor
 package main
 
 import (
