@@ -16,16 +16,11 @@ Preview never writes. Confirmation validates the entire file and commits atomica
 
 ## Persistence and deployment
 
-- Organization: `doron-test1`
-- GVC: `tom-cloud` (Tom Cloud)
-- Location: `doron-office`
-- Planned workload: `football-manager`, stateful, exactly one active replica
-- Persistent volume: `football-data`, 10 GB ext4, mounted at `/data`, recovery policy retain
-- Database: `/data/football.sqlite`, SQLite WAL mode with FULL synchronous writes
-- Automatic SQLite backups: one per day, last 14 daily files in `/data/backups`
-- Volume snapshot policy: 03:00 UTC daily, retained 14 days, final snapshot on deletion. Actual snapshot availability depends on the location's CSI storage driver.
+Deploy the container on Control Plane as a stateful workload with one active replica. Mount a persistent volume at `/data` and set `DATA_DIR=/data`. The database uses SQLite WAL mode with FULL synchronous writes. The application creates one SQLite backup per day and retains the last 14 daily files in `/data/backups`.
 
-One replica is intentional: the app and database share a single persistent disk. Do not enable horizontal autoscaling or add locations without migrating to a shared database architecture. A replica restart reuses the volume. Office/location outages interrupt availability. Local SQLite backups share the same storage failure domain; regularly download the season JSON/CSV to retain an independent copy. The JSON file is an archive for inspection or manual recovery, not an in-app restore feature.
+One replica is intentional: the app and database share a persistent disk. Do not enable horizontal autoscaling or add locations without migrating to a shared database architecture. A replica restart must reuse the volume. Local SQLite backups share the same storage failure domain; download season JSON/CSV to retain an independent copy. The JSON file is an archive for inspection or manual recovery, not an in-app restore feature.
+
+The application has been deployed successfully. The image build and integration tests passed. Live checks confirmed the app serves over HTTPS, database readiness succeeds, and unauthenticated data requests are denied.
 
 ## Run and test
 
@@ -42,4 +37,4 @@ Passwords use salted scrypt; sessions are random, stored hashed in SQLite, and s
 
 ## Maintenance
 
-Keep this source on its dedicated branch. Build a new immutable image tag, then update the existing workload's container image. Preserve the volume and workload name. Roll back application changes by selecting the previous image tag. Never delete `football-data` to update application code.
+Keep this source on its dedicated branch. Build a new immutable image tag, then update the existing workload's container image. Preserve the volume and workload name. Roll back application changes by selecting the previous image tag. Never delete the persistent data volume to update application code.
