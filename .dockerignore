@@ -1,0 +1,7 @@
+.git
+node_modules
+data
+test-data
+*.sqlite*
+*.png
+README.md

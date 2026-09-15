@@ -1,0 +1,40 @@
+{
+  "status": "approved-for-publication-and-deployment",
+  "organization": "doron-test1",
+  "gvc": "tom-cloud",
+  "location": "doron-office",
+  "volumeSet": {
+    "name": "football-data",
+    "capacityGB": 10,
+    "filesystem": "ext4",
+    "mountPath": "/data",
+    "status": "created, awaiting workload mount"
+  },
+  "application": {
+    "name": "football-manager",
+    "type": "stateful",
+    "cpu": "250m",
+    "memory": "512Mi",
+    "replicas": 1,
+    "port": 8080,
+    "health": {
+      "liveness": "/health/live",
+      "readiness": "/health/ready"
+    },
+    "image": "//image/tom-football:20260915-v1"
+  },
+  "source": {
+    "proposedRepository": "https://github.com/dorongrinstein/app1",
+    "proposedBranch": "tom-football-20260915",
+    "visibility": "public",
+    "publication": "approved by user"
+  },
+  "verification": {
+    "backendIntegration": "passed",
+    "frontendSyntax": "passed",
+    "emptyPopulatedFinalizedViews": "passed",
+    "liveBrowserVisualQA": "pending deployment",
+    "remoteBuild": "pending approval",
+    "canonicalEndpoint": "not yet created"
+  }
+}

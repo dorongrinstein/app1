@@ -1,13 +1,45 @@
-# Neon Orbit Pinball
+# Gridiron — Tom Football Manager
 
-A responsive, self-contained browser pinball game served by a small Go HTTP server.
+A complete American football league manager. Node.js 24 and its built-in SQLite driver; no application dependencies.
 
-## Run locally
+## Use
 
-```bash
-go run .
+Create an account in the app. Each account owns its seasons, teams, players, and scores. Add teams and players manually, or import a CSV, which creates missing roster members. Record play counts for each player and week. Rankings recalculate from your season's scoring rules. Finalize the season to preserve final standings and lock edits; reopen for corrections.
+
+Default scoring: touchdown 6, field goal 3, extra point 1, two-point conversion 2, safety 2. These represent credited scoring plays, not standard fantasy statistics. Passing touchdowns are not separately credited unless you add that category. Highest total points wins; equal totals share rank and MVP. Players without any recorded week are unranked. Average points divides by recorded weeks, including explicit zero-point entries.
+
+## CSV
+
+Download the template inside the app. Required columns: `week`, `team`, `player`, and at least one configured scoring category (`td`, `fg`, `xp`, `two`, `safety` by default). Optional: `jersey`, `position`, `notes`. An exported `total` column is accepted but recalculated. Quote names containing commas. Use whole nonnegative play counts. Up to 2 MB / 5,000 rows per upload. Include jersey numbers to distinguish players sharing a team and name.
+
+Preview never writes. Confirmation validates the entire file and commits atomically. Duplicate player/week rows within a file are rejected. Reimport replaces each included player's complete weekly entry; missing category columns become zero. Unmentioned players/weeks are unchanged. Exported text cells are escaped to prevent spreadsheet formula execution.
+
+## Persistence and deployment
+
+- Organization: `doron-test1`
+- GVC: `tom-cloud` (Tom Cloud)
+- Location: `doron-office`
+- Planned workload: `football-manager`, stateful, exactly one active replica
+- Persistent volume: `football-data`, 10 GB ext4, mounted at `/data`, recovery policy retain
+- Database: `/data/football.sqlite`, SQLite WAL mode with FULL synchronous writes
+- Automatic SQLite backups: one per day, last 14 daily files in `/data/backups`
+- Volume snapshot policy: 03:00 UTC daily, retained 14 days, final snapshot on deletion. Actual snapshot availability depends on the location's CSI storage driver.
+
+One replica is intentional: the app and database share a single persistent disk. Do not enable horizontal autoscaling or add locations without migrating to a shared database architecture. A replica restart reuses the volume. Office/location outages interrupt availability. Local SQLite backups share the same storage failure domain; regularly download the season JSON/CSV to retain an independent copy. The JSON file is an archive for inspection or manual recovery, not an in-app restore feature.
+
+## Run and test
+
+```sh
+npm start
+npm test
 ```
 
-Open `http://localhost:8080`. Use the left/right arrow keys (or A/D), and Space to launch. Touch controls are included for mobile play.
+Environment: `PORT` (8080), `DATA_DIR` (`./data` locally), `NODE_ENV=production` for Secure session cookies. Production must be served over HTTPS. `/health/live` checks the process; `/health/ready` queries SQLite. Docker builds run the integration test before producing the application image.
 
-The service exposes `GET /healthz` for readiness and liveness probes.
+Tests cover manual scores, CSV parsing and atomicity, duplicate import prevention, cross-account access, optimistic revision conflicts, custom point values, tie handling, season finalization, export, session/logout behavior, CSRF headers, roster copying, and persistence across a real process restart.
+
+Passwords use salted scrypt; sessions are random, stored hashed in SQLite, and sent only in HttpOnly/SameSite=Strict cookies (Secure in production). Requests use parameterized SQL, owner scoping, custom-header and origin checks. There is no email-based password reset. Remember your username and password.
+
+## Maintenance
+
+Keep this source on its dedicated branch. Build a new immutable image tag, then update the existing workload's container image. Preserve the volume and workload name. Roll back application changes by selecting the previous image tag. Never delete `football-data` to update application code.
