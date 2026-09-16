@@ -1,0 +1,18 @@
+{
+  "format": "ron-vault",
+  "version": 1,
+  "kdf": {
+    "name": "Argon2id",
+    "version": 19,
+    "memoryKiB": 65536,
+    "iterations": 3,
+    "parallelism": 4
+  },
+  "cipher": {
+    "name": "AES-256-GCM",
+    "iv": "AAECAwQFBgcICQoL",
+    "tagBits": 128
+  },
+  "salt": "AAECAwQFBgcICQoLDA0ODw==",
+  "data": "KdL7v3lC9Pf7ruURF32jdR2Aom5TLtPlTJGyC53Q9xx4hLJMr1sOfKqkB5NpsspZvIUbV2nihUMS9iHWDkcLuOjvMBJnjQ=="
+}
