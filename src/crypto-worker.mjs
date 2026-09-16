@@ -1,10 +1,10 @@
-import { encryptText, decryptText } from './crypto.mjs';
+import { derivePasswordKeyBytes } from './crypto.mjs';
 self.onmessage = async ({ data }) => {
   try {
-    if (!data || !['encrypt','decrypt'].includes(data.mode)) throw new Error('Unknown operation.');
-    const result = await (data.mode === 'encrypt' ? encryptText : decryptText)(data.text, data.password);
-    self.postMessage({ result });
+    if (!data || typeof data.password !== 'string' || !(data.salt instanceof Uint8Array) || data.salt.length !== 16) throw new Error('Invalid key derivation request.');
+    const key = await derivePasswordKeyBytes(data.password, data.salt);
+    self.postMessage({ key: key.buffer }, [key.buffer]);
   } catch (error) {
     self.postMessage({ error: error instanceof Error ? error.message : 'The operation could not be completed.' });
-  } finally { data.password = ''; data.text = ''; self.close(); }
+  } finally { if (data) data.password = ''; self.close(); }
 };

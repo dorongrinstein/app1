@@ -30,15 +30,20 @@ function checkPassword(password, encrypting) {
   if (encrypting && Array.from(password).length < 12) throw new Error('Use a password with at least 12 characters. A long, random passphrase is better.');
   if (encoder.encode(password).length > 1024) throw new Error('Password must be no more than 1,024 UTF-8 bytes.');
 }
-async function deriveKey(password, salt, usage) {
+export async function derivePasswordKeyBytes(password, salt) {
   const passwordBytes = encoder.encode(password);
+  try {
+    return await argon2id({ password: passwordBytes, salt, parallelism: KDF.parallelism, iterations: KDF.iterations, memorySize: KDF.memoryKiB, hashLength: 32, outputType: 'binary' });
+  } finally { passwordBytes.fill(0); }
+}
+async function deriveKey(password, salt, usage, derive) {
   let raw;
   try {
-    raw = await argon2id({ password: passwordBytes, salt, parallelism: KDF.parallelism, iterations: KDF.iterations, memorySize: KDF.memoryKiB, hashLength: 32, outputType: 'binary' });
+    raw = await derive(password, salt);
     return await crypto.subtle.importKey('raw', raw, { name: 'AES-GCM' }, false, [usage]);
-  } finally { passwordBytes.fill(0); raw?.fill(0); }
+  } finally { raw?.fill(0); }
 }
-export async function encryptText(text, password) {
+export async function encryptText(text, password, derive = derivePasswordKeyBytes) {
   if (!crypto?.subtle) throw new Error('Secure encryption is unavailable. Open this app over HTTPS in a current browser.');
   checkPassword(password, true);
   if (typeof text !== 'string' || text.length === 0) throw new Error('Enter text or choose a text file first.');
@@ -48,7 +53,7 @@ export async function encryptText(text, password) {
     const salt = crypto.getRandomValues(new Uint8Array(16));
     const iv = crypto.getRandomValues(new Uint8Array(12));
     const envelope = header(toBase64(salt), toBase64(iv));
-    const key = await deriveKey(password, salt, 'encrypt');
+    const key = await deriveKey(password, salt, 'encrypt', derive);
     const ciphertext = await crypto.subtle.encrypt({ name: 'AES-GCM', iv, tagLength: 128, additionalData: encoder.encode(JSON.stringify(envelope)) }, key, plain);
     return JSON.stringify({ ...envelope, data: toBase64(new Uint8Array(ciphertext)) }, null, 2);
   } finally { plain.fill(0); }
@@ -67,10 +72,10 @@ export function parseEnvelope(text) {
   if (data.length < 17 || data.length > MAX_TEXT_BYTES + 16) throw invalid();
   return { salt, iv, data, aad: encoder.encode(JSON.stringify(header(envelope.salt, envelope.cipher.iv))) };
 }
-export async function decryptText(text, password) {
+export async function decryptText(text, password, derive = derivePasswordKeyBytes) {
   checkPassword(password, false);
   const { salt, iv, data, aad } = parseEnvelope(text);
-  const key = await deriveKey(password, salt, 'decrypt');
+  const key = await deriveKey(password, salt, 'decrypt', derive);
   let plain;
   try {
     plain = new Uint8Array(await crypto.subtle.decrypt({ name: 'AES-GCM', iv, tagLength: 128, additionalData: aad }, key, data));

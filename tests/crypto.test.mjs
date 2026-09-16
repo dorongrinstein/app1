@@ -67,18 +67,22 @@ test('password whitespace is significant and is not silently trimmed', async () 
   await assert.rejects(decryptText(envelope, password), /Unable to decrypt/);
 });
 
-test('bundled browser worker executes encryption and decryption without network APIs', async () => {
+test('bundled KDF worker supports opaque origins without Web Crypto or network APIs', async () => {
   const script = await readFile(new URL('../dist/crypto-worker.js', import.meta.url), 'utf8');
   async function execute(data) {
     let result;
     const self = { postMessage: value => { result = value; }, close() {} };
-    const context = vm.createContext({ self, crypto, WebAssembly, TextEncoder, TextDecoder, Uint8Array, Uint32Array, Int32Array, ArrayBuffer, DataView, atob, btoa, setTimeout, clearTimeout });
+    const context = vm.createContext({ self, WebAssembly, TextEncoder, TextDecoder, Uint8Array, Uint32Array, Int32Array, ArrayBuffer, DataView, atob, btoa, setTimeout, clearTimeout });
     vm.runInContext(script, context);
     await self.onmessage({ data });
     return result;
   }
-  const encrypted = await execute({ mode:'encrypt', text:sample, password });
-  assert.equal(encrypted.error, undefined);
-  const decrypted = await execute({ mode:'decrypt', text:encrypted.result, password });
-  assert.equal(decrypted.result, sample);
+  async function deriveInWorker(password, salt) {
+    const derived = await execute({ password, salt });
+    assert.equal(derived.error, undefined);
+    assert.equal(derived.key.byteLength, 32);
+    return new Uint8Array(derived.key);
+  }
+  const encrypted = await encryptText(sample, password, deriveInWorker);
+  assert.equal(await decryptText(encrypted, password, deriveInWorker), sample);
 });
