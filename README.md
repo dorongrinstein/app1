@@ -1,6 +1,6 @@
-# Ron Vault
+# Doron Vault
 
-Password-based text encryption and decryption entirely in the browser. The server serves a fixed allowlist of static assets and health checks; it rejects all methods except GET and HEAD. No application database, telemetry, cookies, external scripts, or browser persistence.
+Password-based text encryption and decryption entirely in the browser. BoomURL hosts the built static files in `dist/`. The included Control Plane server serves a fixed allowlist of static assets and health checks; it rejects all methods except GET and HEAD. No application database, telemetry, cookies, external scripts, or browser persistence.
 
 ## Cryptography
 
@@ -18,6 +18,8 @@ This is a new application, not independently audited. Browser extensions, malwar
 Requires Node.js 24. Run `npm ci`, `npm run build`, `npm test`, and `npm start`. Open the app over HTTPS (or localhost during development). Build with the Dockerfile for linux/amd64.
 
 ## Deployment
+
+The current branding is **Doron Vault**. Publish `dist/` as a static site on BoomURL using the name `doron-vault`. The HTML includes a restrictive Content Security Policy and no-referrer policy so client network connections remain blocked without relying on the Node server's headers. The encryption file format remains `ron-vault` version 1, with `.ron` downloads, to preserve compatibility with existing files.
 
 Control Plane organization: `doron-test1`; GVC: `ron-gvc`; placement: `aws-us-west-2`; workload: `ron-vault`. Source is isolated on branch `ron-vault-20260915` in `dorongrinstein/app1`. Two small replicas serve the static application. All expensive cryptographic computation runs on the user's device.
 

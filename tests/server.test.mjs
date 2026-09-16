@@ -13,7 +13,7 @@ test('static server returns the app with restrictive headers, rejects uploads an
     }
     assert(response);
     assert.equal(response.status, 200);
-    assert((await response.text()).includes('Ron Vault'));
+    assert((await response.text()).includes('<title>Doron Vault</title>'));
     assert(response.headers.get('content-security-policy').includes("connect-src 'none'"));
     assert(response.headers.get('content-security-policy').includes("frame-ancestors 'none'"));
     assert.equal(response.headers.get('cache-control'), 'no-store');

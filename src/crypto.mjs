@@ -4,7 +4,7 @@ export const MAX_TEXT_BYTES = 5 * 1024 * 1024;
 export const MAX_ENVELOPE_BYTES = 8 * 1024 * 1024;
 export const KDF = Object.freeze({ name: 'Argon2id', version: 19, memoryKiB: 65536, iterations: 3, parallelism: 4 });
 const encoder = new TextEncoder();
-const invalid = () => new Error('This is not a supported Ron Vault encrypted file.');
+const invalid = () => new Error('This is not a supported Doron Vault encrypted file.');
 
 export function toBase64(bytes) {
   let result = '';
