@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light"><title>Mailbox Key · Microsoft refresh tokens</title><link rel="stylesheet" href="/style.css"><script src="/app.js" defer></script></head>
+<body>
+<header><a class="brand" href="/" aria-label="Mailbox Key home"><span class="brand-icon">M<span>↗</span></span> Mailbox Key</a><span class="tag"><i></i> Personal Microsoft accounts</span></header>
+<main>
+<section class="intro"><div class="eyebrow">YOUR ACCOUNT. YOUR TOKEN.</div><h1>A fresh token.<br><span>Without the terminal.</span></h1><p>Connect your Hotmail or Outlook.com account, approve access with Microsoft, and copy your refresh token.</p></section>
+<div class="layout"><section class="card">
+<ol class="steps" aria-label="Progress"><li id="step1" class="active"><b>1</b> Choose access</li><li id="step2"><b>2</b> Sign in</li><li id="step3"><b>3</b> Copy token</li></ol>
+<div id="setup">
+<div class="section-head"><span class="eyebrow">01 / CONFIGURE</span><h2>What does your app need?</h2><p>Choose the API your integration uses. You’ll approve these permissions on Microsoft’s website.</p></div>
+<label for="mode">Access permissions</label><select id="mode"><optgroup label="Microsoft Graph"><option value="graph_read">Graph · Read email</option><option value="graph_send">Graph · Send email</option><option value="graph_both">Graph · Read and send email</option></optgroup><optgroup label="Email protocols"><option value="imap">IMAP · Read and manage email</option><option value="smtp">SMTP · Send email</option><option value="mail">IMAP + SMTP · Read, manage, and send email</option></optgroup></select>
+<p class="hint" id="permissionNote">Read your mailbox through Microsoft Graph. Offline access is included to obtain a refresh token.</p>
+<div class="app-id"><span>MICROSOFT APPLICATION ID</span><code id="clientId">Loading…</code></div>
+<button class="primary wide" id="start" disabled>Get sign-in code <span>→</span></button>
+<p class="small center">Your password is entered only on Microsoft’s website.</p>
+</div>
+<div id="authorize" hidden>
+<div class="section-head"><span class="eyebrow">02 / AUTHORIZE</span><h2>One code. One secure sign-in.</h2><p>Copy this code, open Microsoft sign-in, then enter it and approve access for your personal account.</p></div>
+<div class="code-panel"><span>YOUR SIGN-IN CODE</span><div id="userCode" class="user-code"></div><button id="copyCode" class="secondary">Copy code</button></div>
+<a id="signIn" class="primary wide" target="_blank" rel="noopener noreferrer">Open Microsoft sign-in <span>↗</span></a>
+<p class="small center">Return to this tab after approving access.</p>
+<div class="waiting"><span class="pulse"></span><div><strong id="waitText">Waiting for your approval</strong><small id="countdown"></small></div></div>
+<button class="text-button" id="cancel">Cancel and start again</button>
+</div>
+<div id="result" hidden>
+<div class="section-head"><span class="eyebrow success">03 / READY</span><h2>Your refresh token is ready.</h2><p>Copy it into your app’s secret storage. It is bound to the application ID shown below.</p></div>
+<label for="token">Refresh token</label><textarea id="token" rows="5" readonly spellcheck="false" autocomplete="off" aria-label="Refresh token, hidden until revealed"></textarea>
+<div class="result-actions"><button class="primary" id="copyToken">Copy refresh token</button><button class="secondary" id="reveal">Reveal</button></div>
+<div class="granted"><span>GRANTED SCOPES</span><code id="scopes"></code></div>
+<p class="small">The token is cleared from this page after 5 minutes, when you leave, or when you click Clear. Copies on your clipboard are not automatically erased.</p>
+<button class="text-button" id="clear">Clear token and start again</button>
+</div>
+<div id="error" role="alert" hidden></div><div id="notice" role="status" aria-live="polite"></div>
+</section>
+<aside>
+<div class="aside-top"><span class="shield">◇</span><h3>Made to be temporary.</h3><p>No token database. No browser storage. No analytics.</p></div>
+<div class="aside-item"><b>01</b><div><h4>Sign in with Microsoft</h4><p>Hotmail, Outlook.com, and Live accounts are supported.</p></div></div>
+<div class="aside-item"><b>02</b><div><h4>Keep your token private</h4><p>The server relays the token over HTTPS without saving it. Only this tab displays your result.</p></div></div>
+<div class="aside-item"><b>03</b><div><h4>Save the replacement</h4><p>When your app refreshes access, securely save the new refresh token returned by Microsoft.</p></div></div>
+<details><summary>First-time app setup</summary><p>In your Azure app registration, confirm that <strong>Supported account types</strong> includes personal Microsoft accounts. Under <strong>Authentication → Advanced settings</strong>, enable <strong>Allow public client flows</strong> and save.</p><p>No client secret or redirect URI is needed for this flow.</p><a id="azureLink" target="_blank" rel="noopener noreferrer">Open app registration ↗</a></details>
+</aside></div>
+<footer><span>Hosted on Control Plane</span><span>Independent utility · Not a Microsoft product</span></footer>
+</main></body></html>
